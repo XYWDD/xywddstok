@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parada Sant Jordi 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #C1395E;
+    --rose-light: #F7E8ED;
+    --rose-mid: #E8A0B4;
+    --green: #2D6A4F;
+    --green-light: #E8F5EE;
+    --bg: #FBF8F5;
+    --surface: #FFFFFF;
+    --border: #EDE8E3;
+    --text: #1C1917;
+    --muted: #78716C;
+    --red: #991B1B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 3rem; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem 1rem; position: sticky; top: 0; z-index: 10; }
+  .header-inner { max-width: 720px; margin: 0 auto; }
+  .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: var(--rose); }
+  header .date { font-size: 12px; color: var(--muted); }
+  .header-ben { font-size: 13px; color: var(--muted); }
+  .header-ben span { font-weight: 500; }
+  .pos { color: var(--green) !important; }
+  .neg { color: var(--red) !important; }
+
+  main { max-width: 720px; margin: 0 auto; padding: 1.25rem 1rem; }
+
+  .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  @media(min-width: 480px) { .metrics { grid-template-columns: repeat(4, 1fr); } }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .metric .m-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .metric .m-val { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; }
+
+  .articles { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+  .article-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+  .ac-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .ac-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 500; }
+  .badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .badge-sense   { background: #F5F5F4; color: var(--muted); }
+  .badge-venent  { background: var(--rose-light); color: var(--rose); }
+  .badge-esgotat { background: var(--green-light); color: var(--green); }
+
+  .ac-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .ac-stat { text-align: center; background: var(--bg); border-radius: 8px; padding: 8px 4px; }
+  .ac-stat .s-val { font-size: 16px; font-weight: 500; }
+  .ac-stat .s-lab { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+  .ac-progress { margin-top: 10px; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--rose); border-radius: 4px; transition: width 0.4s ease; }
+  .progress-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right; }
+  .ac-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+  .ac-extra span { font-weight: 500; color: var(--text); }
+
+  .venda-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 1.5rem; }
+  .venda-section h2 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 500; margin-bottom: 14px; }
+  .venda-form { display: flex; flex-direction: column; gap: 12px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-field { display: flex; flex-direction: column; gap: 5px; }
+  .form-field label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .form-field select, .form-field input { border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; font-size: 15px; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); width: 100%; -webkit-appearance: none; }
+  .form-field select:focus, .form-field input:focus { outline: none; border-color: var(--rose-mid); }
+  .preview-venda { background: var(--rose-light); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: var(--rose); min-height: 36px; }
+  .btn-vendre { width: 100%; background: var(--rose); color: white; border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+  .btn-vendre:active { background: #A02E4F; transform: scale(0.99); }
+
+  .log-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+  .log-section h2 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 500; margin-bottom: 12px; }
+  .log-empty { font-size: 13px; color: var(--muted); font-style: italic; }
+  .log-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .log-item:last-child { border-bottom: none; }
+  .log-hora { color: var(--muted); font-size: 12px; white-space: nowrap; padding-top: 1px; min-width: 38px; }
+  .log-ingrés { color: var(--green); font-weight: 500; }
+
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--green); color: white; border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <h1>🌹 Parada Sant Jordi</h1>
+      <span class="date">23 d'abril de 2026</span>
+    </div>
+    <div class="header-ben">Benefici actual: <span id="hdr-ben">—</span></div>
+  </div>
+</header>
+
+<main>
+  <div class="metrics">
+    <div class="metric"><div class="m-label">Inversió</div><div class="m-val" id="m-inv">—</div></div>
+    <div class="metric"><div class="m-label">Ingressos</div><div class="m-val" id="m-ingr">0,00 €</div></div>
+    <div class="metric"><div class="m-label">Benefici</div><div class="m-val neg" id="m-ben">—</div></div>
+    <div class="metric"><div class="m-label">Venudes</div><div class="m-val" id="m-uni">0</div></div>
+  </div>
+
+  <div class="articles" id="articles-container"></div>
+
+  <div class="venda-section">
+    <h2>Registrar venda</h2>
+    <div class="venda-form">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Article</label>
+          <select id="sel-article" onchange="updatePreview()"></select>
+        </div>
+        <div class="form-field">
+          <label>Quantitat</label>
+          <input type="number" id="inp-qty" min="1" value="1" inputmode="numeric" oninput="updatePreview()" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Preu unitari (€)</label>
+        <input type="number" id="inp-preu" min="0" step="0.01" placeholder="0,00" inputmode="decimal" oninput="updatePreview()" />
+      </div>
+      <div class="preview-venda" id="preview-venda">Introdueix quantitat i preu per veure el resum.</div>
+      <button class="btn-vendre" onclick="registrarVenda()">Confirmar venda</button>
+    </div>
+  </div>
+
+  <div class="log-section">
+    <h2>Historial de vendes</h2>
+    <div id="log-vendes"><div class="log-empty">Encara no hi ha vendes registrades.</div></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const articles = [
+  { id: 'roses',         nom: 'Roses',            costUnit: 1.40,   quantitatIni: 400, quantitatResta: 400, venuts: 0, ingressos: 0 },
+  { id: 'rosals_bossa',  nom: 'Rosals amb bossa', costUnit: 0.50,   quantitatIni: 4,   quantitatResta: 4,   venuts: 0, ingressos: 0 },
+  { id: 'rosals_mimbre', nom: 'Rosals de mimbre', costUnit: 2.00,   quantitatIni: 11,  quantitatResta: 11,  venuts: 0, ingressos: 0 },
+  { id: 'flors_chuche',  nom: 'Flors de chuche',  costUnit: 0.2012, quantitatIni: 200, quantitatResta: 200, venuts: 0, ingressos: 0 },
+];
+
+function fmt(val) {
+  if (val === null || val === undefined) return '—';
+  return val.toFixed(2).replace('.', ',') + ' €';
+}
+function costTotal(a) { return a.costUnit * a.quantitatIni; }
+function benefici(a)  { return a.ingressos - costTotal(a); }
+
+function badgeEstat(a) {
+  if (a.quantitatResta === 0) return ['badge-esgotat', 'Esgotat'];
+  if (a.venuts === 0)         return ['badge-sense', 'Sense vendes'];
+  return ['badge-venent', Math.round((a.venuts / a.quantitatIni) * 100) + '% venut'];
+}
+
+function renderArticles() {
+  const cont = document.getElementById('articles-container');
+  cont.innerHTML = '';
+  articles.forEach(a => {
+    const ct  = costTotal(a);
+    const ben = benefici(a);
+    const pct = Math.round((a.venuts / a.quantitatIni) * 100);
+    const [badgeClass, badgeText] = badgeEstat(a);
+    const benClass = ben >= 0 ? 'pos' : 'neg';
+    const card = document.createElement('div');
+    card.className = 'article-card';
+    card.innerHTML = `
+      <div class="ac-top">
+        <div class="ac-name">${a.nom}</div>
+        <span class="badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="ac-stats">
+        <div class="ac-stat"><div class="s-val">${a.quantitatResta}</div><div class="s-lab">Resta</div></div>
+        <div class="ac-stat"><div class="s-val">${a.venuts}</div><div class="s-lab">Venuts</div></div>
+        <div class="ac-stat"><div class="s-val ${benClass}">${fmt(ben)}</div><div class="s-lab">Benefici</div></div>
+      </div>
+      <div class="ac-progress">
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-label">${pct}% venut de ${a.quantitatIni} unitats</div>
+      </div>
+      <div class="ac-extra">
+        <div>Cost total: <span>${fmt(ct)}</span></div>
+        <div>Ingressos: <span>${fmt(a.ingressos)}</span></div>
+      </div>
+    `;
+    cont.appendChild(card);
+  });
+}
+
+function renderMetrics() {
+  const inv  = articles.reduce((s, a) => s + costTotal(a), 0);
+  const ingr = articles.reduce((s, a) => s + a.ingressos, 0);
+  const ben  = articles.reduce((s, a) => s + benefici(a), 0);
+  const uni  = articles.reduce((s, a) => s + a.venuts, 0);
+
+  document.getElementById('m-inv').textContent  = fmt(inv);
+  document.getElementById('m-ingr').textContent = fmt(ingr);
+  document.getElementById('m-uni').textContent  = uni;
+
+  const benEl = document.getElementById('m-ben');
+  benEl.textContent = fmt(ben);
+  benEl.className = 'm-val ' + (ben >= 0 ? 'pos' : 'neg');
+
+  const hdrBen = document.getElementById('hdr-ben');
+  hdrBen.textContent = fmt(ben);
+  hdrBen.className = ben >= 0 ? 'pos' : 'neg';
+}
+
+function renderSelect() {
+  const sel = document.getElementById('sel-article');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  articles.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.id;
+    opt.textContent = a.nom;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+function updatePreview() {
+  const id   = document.getElementById('sel-article').value;
+  const qty  = parseInt(document.getElementById('inp-qty').value) || 0;
+  const preu = parseFloat(document.getElementById('inp-preu').value) || 0;
+  const a    = articles.find(x => x.id === id);
+  const prev = document.getElementById('preview-venda');
+  if (!a || qty <= 0 || preu <= 0) { prev.textContent = 'Introdueix quantitat i preu per veure el resum.'; return; }
+  prev.textContent = qty + ' ' + a.nom + ' × ' + preu.toFixed(2).replace('.', ',') + ' € = ' + (qty * preu).toFixed(2).replace('.', ',') + ' €';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function registrarVenda() {
+  const id   = document.getElementById('sel-article').value;
+  const qty  = parseInt(document.getElementById('inp-qty').value) || 0;
+  const preu = parseFloat(document.getElementById('inp-preu').value) || 0;
+  if (qty <= 0 || preu <= 0) { alert('Introdueix una quantitat i un preu vàlids.'); return; }
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  if (qty > a.quantitatResta) { alert('No hi ha prou estoc de ' + a.nom + '. Resten ' + a.quantitatResta + ' unitats.'); return; }
+
+  a.quantitatResta -= qty;
+  a.venuts         += qty;
+  a.ingressos      += qty * preu;
+
+  const total   = (qty * preu).toFixed(2).replace('.', ',');
+  const preuFmt = preu.toFixed(2).replace('.', ',');
+  const now     = new Date();
+  const hora    = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+  const logDiv = document.getElementById('log-vendes');
+  if (logDiv.querySelector('.log-empty')) logDiv.innerHTML = '';
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `<span class="log-hora">${hora}</span><span>${qty} <b>${a.nom}</b> a ${preuFmt} €/u — <span class="log-ingrés">+${total} €</span></span>`;
+  logDiv.insertBefore(item, logDiv.firstChild);
+
+  renderArticles();
+  renderMetrics();
+  document.getElementById('inp-qty').value  = 1;
+  document.getElementById('inp-preu').value = '';
+  updatePreview();
+  showToast('Venda registrada: +' + total + ' €');
+}
+
+renderSelect();
+renderArticles();
+renderMetrics();
+</script>
+</body>
+</html>
