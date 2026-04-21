@@ -71,6 +71,8 @@
   .preview-venda { background: var(--rose-light); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: var(--rose); min-height: 36px; }
   .btn-vendre { width: 100%; background: var(--rose); color: white; border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.1s; }
   .btn-vendre:active { background: #A02E4F; transform: scale(0.99); }
+  .saved-badge { font-size: 11px; color: var(--green); text-align: right; opacity: 0; transition: opacity 0.3s; height: 16px; }
+  .saved-badge.show { opacity: 1; }
 
   .log-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
   .log-section h2 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 500; margin-bottom: 12px; }
@@ -78,7 +80,9 @@
   .log-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .log-item:last-child { border-bottom: none; }
   .log-hora { color: var(--muted); font-size: 12px; white-space: nowrap; padding-top: 1px; min-width: 38px; }
-  .log-ingrés { color: var(--green); font-weight: 500; }
+  .log-ingres { color: var(--green); font-weight: 500; }
+  .btn-reset { width: 100%; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 11px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--muted); cursor: pointer; margin-top: 16px; }
+  .btn-reset:active { background: var(--bg); }
 
   .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--green); color: white; border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; white-space: nowrap; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -125,24 +129,51 @@
       </div>
       <div class="preview-venda" id="preview-venda">Introdueix quantitat i preu per veure el resum.</div>
       <button class="btn-vendre" onclick="registrarVenda()">Confirmar venda</button>
+      <div class="saved-badge" id="saved-badge">✓ Guardat automàticament</div>
     </div>
   </div>
 
   <div class="log-section">
     <h2>Historial de vendes</h2>
     <div id="log-vendes"><div class="log-empty">Encara no hi ha vendes registrades.</div></div>
+    <button class="btn-reset" onclick="resetDades()">Reiniciar totes les dades</button>
   </div>
 </main>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const articles = [
+const DEFAULTS = [
   { id: 'roses',         nom: 'Roses',            costUnit: 1.40,   quantitatIni: 400, quantitatResta: 400, venuts: 0, ingressos: 0 },
   { id: 'rosals_bossa',  nom: 'Rosals amb bossa', costUnit: 0.50,   quantitatIni: 4,   quantitatResta: 4,   venuts: 0, ingressos: 0 },
   { id: 'rosals_mimbre', nom: 'Rosals de mimbre', costUnit: 2.00,   quantitatIni: 11,  quantitatResta: 11,  venuts: 0, ingressos: 0 },
   { id: 'flors_chuche',  nom: 'Flors de chuche',  costUnit: 0.2012, quantitatIni: 200, quantitatResta: 200, venuts: 0, ingressos: 0 },
 ];
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('santjordi_articles');
+    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULTS));
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
+}
+
+function loadLog() {
+  try {
+    const saved = localStorage.getItem('santjordi_log');
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function saveData() {
+  localStorage.setItem('santjordi_articles', JSON.stringify(articles));
+  localStorage.setItem('santjordi_log', JSON.stringify(logItems));
+  const badge = document.getElementById('saved-badge');
+  badge.classList.add('show');
+  setTimeout(() => badge.classList.remove('show'), 2000);
+}
+
+let articles = loadData();
+let logItems = loadLog();
 
 function fmt(val) {
   if (val === null || val === undefined) return '—';
@@ -210,6 +241,21 @@ function renderMetrics() {
   hdrBen.className = ben >= 0 ? 'pos' : 'neg';
 }
 
+function renderLog() {
+  const logDiv = document.getElementById('log-vendes');
+  if (logItems.length === 0) {
+    logDiv.innerHTML = '<div class="log-empty">Encara no hi ha vendes registrades.</div>';
+    return;
+  }
+  logDiv.innerHTML = '';
+  logItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `<span class="log-hora">${item.hora}</span><span>${item.qty} <b>${item.nom}</b> a ${item.preu} €/u — <span class="log-ingres">+${item.total} €</span></span>`;
+    logDiv.appendChild(div);
+  });
+}
+
 function renderSelect() {
   const sel = document.getElementById('sel-article');
   const prev = sel.value;
@@ -258,24 +304,36 @@ function registrarVenda() {
   const now     = new Date();
   const hora    = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 
-  const logDiv = document.getElementById('log-vendes');
-  if (logDiv.querySelector('.log-empty')) logDiv.innerHTML = '';
-  const item = document.createElement('div');
-  item.className = 'log-item';
-  item.innerHTML = `<span class="log-hora">${hora}</span><span>${qty} <b>${a.nom}</b> a ${preuFmt} €/u — <span class="log-ingrés">+${total} €</span></span>`;
-  logDiv.insertBefore(item, logDiv.firstChild);
+  logItems.unshift({ hora, qty, nom: a.nom, preu: preuFmt, total });
 
+  saveData();
   renderArticles();
   renderMetrics();
+  renderLog();
+
   document.getElementById('inp-qty').value  = 1;
   document.getElementById('inp-preu').value = '';
   updatePreview();
   showToast('Venda registrada: +' + total + ' €');
 }
 
+function resetDades() {
+  if (!confirm('Segur que vols reiniciar totes les dades? Es perdran totes les vendes.')) return;
+  localStorage.removeItem('santjordi_articles');
+  localStorage.removeItem('santjordi_log');
+  articles = JSON.parse(JSON.stringify(DEFAULTS));
+  logItems = [];
+  renderSelect();
+  renderArticles();
+  renderMetrics();
+  renderLog();
+  showToast('Dades reiniciades');
+}
+
 renderSelect();
 renderArticles();
 renderMetrics();
+renderLog();
 </script>
 </body>
 </html>
